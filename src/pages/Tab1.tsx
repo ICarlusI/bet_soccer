@@ -77,9 +77,11 @@ const Tab1: React.FC = () => {
       const betsForMatch = bets.filter(bet => bet.matchId === matchId);
       const updatedBets = betsForMatch.map(bet => {
         const betResult =
-          bet.team === m.team1 && result === Result.Win ||
-          bet.team === m.team2 && result === Result.Lose ||
-          bet.result === Result.Draw ? Result.Draw : Result.Lose;
+        (bet.team === m.team1 && result === Result.Win) ||
+        (bet.team === m.team2 && result === Result.Lose) ||
+        (bet.team === null && result === Result.Draw)
+          ? Result.Win
+          : Result.Lose;
         return {
           ...bet,
           result: betResult,
@@ -124,6 +126,8 @@ const Tab1: React.FC = () => {
    )}
    <IonButton onClick={() => placeBet(match.id, match.team1, Result.Win)}>Parier sur {match.team1}</IonButton>
    <IonButton onClick={() => placeBet(match.id, match.team2, Result.Win)}>Parier sur {match.team2}</IonButton>
+   <IonButton onClick={() => placeBet(match.id, match.team1,Result.Draw)}>Parier sur match nul</IonButton>
+
  </IonItem>
   ))}
 </IonList>
