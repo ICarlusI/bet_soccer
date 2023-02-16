@@ -5,6 +5,8 @@ import ExploreContainer from '../components/ExploreContainer';
 import './Tab1.css';
 
 const Tab1: React.FC = () => {
+
+  
   interface Match {
     id: number;
     team1: string;
@@ -54,17 +56,59 @@ const Tab1: React.FC = () => {
   };
 
   const endMatch = (matchId: number) => {
-    const updatedMatches = matches.map(match => {
-      if (match.id === matchId) {
-        return {
-          ...match,
-          result: Math.random() > 0.5 ? Result.Win : Result.Lose,
+    const match = matches.find(match => match.id === matchId);
+    if (!match) {
+      return;
+    }
+  
+    const result = Math.random() > 0.5 ? Result.Win : Result.Lose;
+  
+    const updatedMatches = matches.map(m => {
+      if (m.id === matchId) {
+        const result = Math.random() > 0.5 ? Result.Win : Result.Lose;
+        const updatedMatch = {
+          ...m,
+          result,
           endTime: Date.now(),
         };
+        const betsForMatch = bets.filter(bet => bet.matchId === matchId);
+        const updatedBets = betsForMatch.map(bet => {
+          const betResult = bet.team === match.team1 && result === Result.Win ||
+                            bet.team === match.team2 && result === Result.Lose ||
+                            bet.result === Result.Draw ? Result.Draw : Result.Lose;
+          return {
+            ...bet,
+            result: betResult,
+          };
+        });
+        setBets([...bets.filter(bet => bet.matchId !== matchId), ...updatedBets]);
+        return updatedMatch;
       }
-      return match;
+      return m;
     });
     setMatches(updatedMatches);
+    
+  
+    const betsForMatch = bets.filter(bet => bet.matchId === matchId);
+    betsForMatch.forEach(bet => {
+      const betResult = bet.team === match.team1 && result === Result.Win ||
+                        bet.team === match.team2 && result === Result.Lose ||
+                        bet.result === Result.Draw ? Result.Draw : Result.Lose;
+      console.log(`Bet ${bet.id} result: ${betResult}`);
+    });
+
+    const updatedBets = bets.map(bet => {
+      if (bet.matchId === matchId) {
+        return {
+          ...bet,
+          result: bet.team === match.team1 && result === Result.Win ||
+                  bet.team === match.team2 && result === Result.Lose ||
+                  bet.result === Result.Draw ? Result.Draw : Result.Lose,
+        };
+      }
+      return bet;
+    });
+    setBets(updatedBets);
   };
 
   const match = matches.find(match => match.result === undefined);
@@ -82,26 +126,39 @@ const Tab1: React.FC = () => {
     <IonList>
       <IonItem>
         <IonLabel>
+        <IonButton onClick={() => createMatch('France', 'Allemagne')}>Créer un match</IonButton>
+
           <h2>Match en cours</h2>
         </IonLabel>
       </IonItem>
       {match && (
-        <>
-          <IonItem>
-            <IonLabel>
-            <h3>{match.team1} vs {match.team2}</h3>
-              </IonLabel>
-            </IonItem>
-            <IonItem>
-              <IonLabel>
-                <p>Date: DD/MM/YYYY</p>
-              </IonLabel>
-              <IonLabel>
-                <p>Minute de jeu: XX</p>
-              </IonLabel>
-            </IonItem>
-          </>
-        )}
+  <>
+    <IonItem>
+      <IonLabel>
+      <h3>{match.team1} vs {match.team2}</h3>
+        </IonLabel>
+      </IonItem>
+      <IonItem>
+        <IonLabel>
+          <p>Date: DD/MM/YYYY</p>
+        </IonLabel>
+        <IonLabel>
+          <p>Minute de jeu: XX</p>
+        </IonLabel>
+      </IonItem>
+      {match && bets.some(bet => bet.matchId === match.id) && (
+        <IonButton onClick={() => endMatch(match.id)}>End Match</IonButton>
+      )}
+      
+      <IonList>
+  {bets.map((bet, index) => (
+    <IonItem key={index}>
+      <IonLabel>{`Pari ${index + 1}: ${bet.team} - ${bet.result || 'en attente'}`}</IonLabel>
+    </IonItem>
+  ))} 
+</IonList>
+  </>
+)}
       </IonList>
       <IonList>
         <IonItem>
