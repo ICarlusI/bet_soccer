@@ -1,0 +1,24 @@
+- on peut créer une compétition (1pt) 1pt
+- on peut lister les compétitions (1pt) 0pt
+- on peut mettre-à-jour/supprimer une compétition (1pt) 0pt
+- on peut créer un match (1pt) 1pt
+- on peut lister les matchs (1pt) 1pt
+- on peut mettre-à-jour/supprimer un match (2pts) 1,5pt
+- on peut pronostiquer un match (1pt) 1pt
+- on peut mettre-à-jour/supprimer un pronostic (3pts) 2pt
+- on peut lister les pronostics d'un match (1pt) 1pt
+- on peut voir le classement général (3pts) 1,5pt
+
+Transverse:
+- l'app est responsive (par exemple avec IonGrid, IonRow, breakpoints, etc) (1pt) 0,5
+- l'app est jolie (utilisation des composants ionic) (2pts) 2pt
+- l'app est disponible sous forme d'apk android (2pts) 1pt
+
+Bonus:
+- l'app utilise une feature native de l'appareil (caméra, déverrouillage par empreinte, lecture des contacts, etc) 2pt (2pts)
+- l'app est multi-joueurs (en réseau / avec un serveur) (2pts) 0pt
+- le code est bien committé sous git (issues, commits réguliers & compréhensibles, branches par feature, etc) (2pts) 1pt
+
+pour mon apk android studio ne veux pas m'en creer une donc vous pouvez testez directement avec la commande pour ouvrir android studio l'application se lance parfaitement. 
+
+total 16,5/26
