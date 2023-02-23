@@ -31,8 +31,42 @@ const Tab1: React.FC = () => {
 
   const [matches, setMatches] = useState<Array<Match>>([]);
   const [bets, setBets] = useState<Array<Bet>>([]);
+  const [disqualifiedTeams, setDisqualifiedTeams] = useState<Array<string>>([]);
 
-  const createMatch = (team1: string, team2: string) => {
+  const teams = [
+    'PSG',
+    'Bayern',
+    'Real Madrid',
+    'Barcelona',
+    'Manchester United',
+    'Liverpool',
+    'Chelsea',
+    'Manchester City',
+    'Juventus',
+    'AC Milan',
+    'Inter Milan',
+    'Napoli',
+    'Ajax',
+    'Benfica',
+    'Porto',
+    'Sporting CP',
+  ];
+
+  const createMatch = () => {
+    let team1Index, team2Index;
+    do {
+      team1Index = Math.floor(Math.random() * teams.length);
+      team2Index = Math.floor(Math.random() * teams.length);
+    } while (team1Index === team2Index);
+  
+    const team1 = teams[team1Index];
+    const team2 = teams[team2Index];
+  
+    if (disqualifiedTeams.includes(team1) || disqualifiedTeams.includes(team2)) {
+      console.log("Une ou les deux équipes ont été disqualifiées. Pas de nouveau match.");
+      return;
+    }
+  
     const newMatch: Match = {
       id: Date.now(),
       team1,
@@ -42,6 +76,7 @@ const Tab1: React.FC = () => {
     };
     setMatches([...matches, newMatch]);
   };
+  
 
   const placeBet = (matchId: number, team: string, result: Result) => {
     const newBet: Bet = {
@@ -55,47 +90,83 @@ const Tab1: React.FC = () => {
     setBets([...bets, newBet]);
   };
 
- const endMatch = (matchId: number) => {
-  const match = matches.find(match => match.id === matchId);
-  if (!match) {
-    return;
-  }
-
-  const team1Score = Math.floor(Math.random() * 5);
-  const team2Score = Math.floor(Math.random() * 5);
-  const score = `${team1Score} - ${team2Score}`;
-
-  const updatedMatches = matches.map(m => {
-    if (m.id === matchId) {
-      const result = team1Score > team2Score ? Result.Win : team1Score < team2Score ? Result.Lose : Result.Draw;
+  const endMatch = (matchId: number) => {
+    setMatches(prevMatches => {
+      const matchIndex = prevMatches.findIndex(match => match.id === matchId);
+      if (matchIndex === -1) {
+        return prevMatches;
+      }
+    
+      const match = prevMatches[matchIndex];
+      const team1Score = Math.floor(Math.random() * 5);
+      const team2Score = Math.floor(Math.random() * 5);
+      const score = `${team1Score} - ${team2Score}`;
+    
+      const result =
+        team1Score > team2Score
+          ? Result.Win
+          : team1Score < team2Score
+          ? Result.Lose
+          : Result.Draw;
+    
       const updatedMatch: Match = {
-        ...m,
+        ...match,
         result,
         endTime: Date.now(),
         score,
       };
-      const betsForMatch = bets.filter(bet => bet.matchId === matchId);
-      const updatedBets = betsForMatch.map(bet => {
-        const betResult =
-        (bet.team === m.team1 && result === Result.Win) ||
-        (bet.team === m.team2 && result === Result.Lose) ||
-        (bet.team === null && result === Result.Draw)
-          ? Result.Win
-          : Result.Lose;
-        return {
-          ...bet,
-          result: betResult,
-        };
+    
+      const updatedBets = bets.map((bet) => {
+        if (bet.matchId === matchId) {
+          const betResult =
+            (bet.team === match.team1 && result === Result.Win) ||
+            (bet.team === match.team2 && result === Result.Lose) ||
+            (bet.team === null && result === Result.Draw)
+              ? Result.Win
+              : Result.Lose;
+          return {
+            ...bet,
+            result: betResult,
+          };
+        } else {
+          return bet;
+        }
       });
-      setBets([...bets.filter(bet => bet.matchId !== matchId), ...updatedBets]);
-      return updatedMatch;
-    } else {
-      return m;
-    }
-  });
+    
+      setBets(updatedBets);
+    
+      const updatedMatches = [...prevMatches];
+      updatedMatches[matchIndex] = updatedMatch;
+    
+      const remainingTeams = new Set(updatedMatches.filter((match) => !match.endTime && !match.result).map((match) => match.team1));
+      if (remainingTeams.size === 1) {
+        const winner = remainingTeams.values().next().value;
+        alert(`Le vainqueur est ${winner}`);
+      }
+    
+      const disqualifiedTeams = new Set(updatedMatches.filter((match) => match.result === Result.Lose).map((match) => match.team1));
+      if (disqualifiedTeams.size > 0) {
+        const disqualifiedTeam = disqualifiedTeams.values().next().value;
+        alert(`l'équipe ${disqualifiedTeam} est disqualifié!`);
+        
+        const remainingMatches = updatedMatches.filter((match) => !match.endTime && !disqualifiedTeams.has(match.team1) && !disqualifiedTeams.has(match.team2));
+        if (remainingMatches.length === 1 && remainingMatches[0].result) {
+          const winner = remainingMatches[0].result === Result.Win ? remainingMatches[0].team1 : remainingMatches[0].team2;
+          alert(`Le vainqueur est ${winner}`);
+        }
+      }
+    
+      return updatedMatches;
+    });
+  };
+  
 
-  setMatches(updatedMatches);
-};
+
+  
+  
+  
+  
+  
 
   
 
@@ -136,7 +207,7 @@ const Tab1: React.FC = () => {
             <IonLabel>
               <h2>Create a new match</h2>
             </IonLabel>
-            <IonButton onClick={() => createMatch('PSG', ' Bayern')}>Create</IonButton>
+            <IonButton onClick={() => createMatch()}>Create</IonButton>
           </IonItem>
         </IonList>
         <IonList>
